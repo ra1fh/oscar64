@@ -10,9 +10,9 @@
 #include "Compiler.h"
 #include "DiskImage.h"
 
-#ifdef _WIN32
 bool GetProductAndVersion(char* strProductName, char* strProductVersion)
 {
+#ifdef _WIN32
 	// get the filename of the executable containing the version resource
 	TCHAR szFilename[MAX_PATH + 1] = { 0 };
 	if (GetModuleFileName(NULL, szFilename, MAX_PATH) == 0)
@@ -54,8 +54,12 @@ bool GetProductAndVersion(char* strProductName, char* strProductVersion)
 	strcpy_s(strProductVersion, 100, (LPCSTR)pvProductVersion);
 
 	return true;
-}
+#else
+	strcpy(strProductName, "oscar64");
+	strcpy(strProductVersion, "1.26.229");
+	return true;
 #endif
+}
 
 int main2(int argc, const char** argv)
 {
@@ -67,15 +71,12 @@ int main2(int argc, const char** argv)
 		char	basePath[200], crtPath[200], includePath[200], targetPath[200], diskPath[200];
 		char	strProductName[100], strProductVersion[200];
 
+		GetProductAndVersion(strProductName, strProductVersion);
 #ifdef _WIN32
-			GetProductAndVersion(strProductName, strProductVersion);
 
 			DWORD length = ::GetModuleFileNameA(NULL, basePath, sizeof(basePath));
 
 #else
-		strcpy(strProductName, "oscar64");
-		strcpy(strProductVersion, "1.26.229");
-
 #ifdef __APPLE__
 		uint32_t length = sizeof(basePath);
 
