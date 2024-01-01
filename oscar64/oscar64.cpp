@@ -109,9 +109,14 @@ int main2(int argc, const char** argv)
 		GrowingArray<const char*>	dataFiles(nullptr);
 		GrowingArray<bool>			dataFileCompressed(false);
 
+#if defined(INCLUDEDIR)
+		strcpy_s(includePath, sizeof(includePath), INCLUDEDIR);
+		strcat(includePath, "/");
+#else
 		compiler->mPreprocessor->AddPath(basePath);
 		strcpy_s(includePath, basePath);
 		strcat_s(includePath, "include/");
+#endif
 		compiler->mPreprocessor->AddPath(includePath);
 		strcpy_s(crtPath, includePath);
 		strcat_s(crtPath, "crt.c");

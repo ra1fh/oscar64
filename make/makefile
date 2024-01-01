@@ -5,6 +5,11 @@ objects = $(patsubst ../oscar64/%.cpp,%.o,$(sources))
 CXX = c++
 CPPFLAGS = -g -O2 -std=c++11 -Wno-switch
 
+INCLUDEDIR ?=
+ifneq ($(INCLUDEDIR),)
+	CPPFLAGS += -DINCLUDEDIR=\"$(INCLUDEDIR)\"
+endif
+
 %.o: ../oscar64/%.cpp
 	$(CXX) -c $(CPPFLAGS) $< -o $@
 
