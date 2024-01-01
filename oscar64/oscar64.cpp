@@ -7,6 +7,9 @@
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
 #endif
+#ifdef __OpenBSD__
+#include <libgen.h>
+#endif
 #include "Compiler.h"
 #include "DiskImage.h"
 
@@ -77,11 +80,35 @@ int main2(int argc, const char** argv)
 			DWORD length = ::GetModuleFileNameA(NULL, basePath, sizeof(basePath));
 
 #else
-#ifdef __APPLE__
+#if defined(__APPLE__)
 		uint32_t length = sizeof(basePath);
 
 		_NSGetExecutablePath(basePath, &length);
 		length = strlen(basePath);
+#elif defined(__OpenBSD__)
+		char buf[PATH_MAX];
+		if (!realpath(argv[0], buf)) {
+		    fprintf(stderr, "error: first realpath failed\n");
+		    exit(1);
+		}
+		char *dir = dirname(buf);
+		if (!dir) {
+		    fprintf(stderr, "error: base path dirname failed\n");
+		    exit(1);
+		}
+		strlcpy(buf, dir, sizeof(buf));
+		strlcat(buf, "/../", sizeof(buf));
+		if (!realpath(buf, buf)) {
+		    fprintf(stderr, "error: second realpath failed\n");
+		    exit(1);
+		}
+		size_t length = strlen(buf);
+		if (length > sizeof(basePath) - 3) {
+		    fprintf(stderr, "error: base path length too long\n");
+		    exit(1);
+		}
+		strlcpy(basePath, buf, sizeof(basePath));
+		strlcat(basePath, "/", sizeof(basePath));
 #else
 		int length = readlink("/proc/self/exe", basePath, sizeof(basePath));
 
@@ -89,6 +116,7 @@ int main2(int argc, const char** argv)
 		//		int length = strlen(basePath);
 #endif
 #endif
+#if !defined(__OpenBSD__)
 		while (length > 0 && basePath[length - 1] != '/' && basePath[length - 1] != '\\')
 			length--;
 
@@ -100,6 +128,7 @@ int main2(int argc, const char** argv)
 		}
 
 		basePath[length] = 0;
+#endif
 
 		Compiler* compiler = new Compiler();
 
