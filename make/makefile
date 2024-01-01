@@ -1,26 +1,10 @@
 
-
 sources = $(wildcard ../oscar64/*.cpp)
 objects = $(patsubst ../oscar64/%.cpp,%.o,$(sources))
 
 CXX = c++
 CPPFLAGS = -g -O2 -std=c++11 -Wno-switch
- 
- $(shell mkdir -p ../bin)
- 
-ifdef WINDIR
-	linklibs = -lpthread
-else
-	UNAME_S := $(shell uname -s)
-	
-	ifeq ($(UNAME_S), Darwin)
 
-		linklibs = -lpthread
-  	else
-		linklibs = -lrt -lpthread
-	endif
-endif
- 
 %.o: ../oscar64/%.cpp
 	$(CXX) -c $(CPPFLAGS) $< -o $@
 
@@ -31,16 +15,11 @@ endif
 	rm -f $@.$$$$
 
 ../bin/oscar64 : $(objects)
-	$(CXX) $(CPPFLAGS) $(linklibs) $(objects) -o ../bin/oscar64
+	mkdir -p ../bin
+	$(CXX) $(CPPFLAGS) $(objects) -o ../bin/oscar64
 
 .PHONY : clean
 clean :
-	-rm *.o *.d ../bin/oscar64
+	-rm -f *.o *.d ../bin/oscar64
 
-ifeq ($(UNAME_S), Darwin)
-
-else
-
-include $(objects:.o=.d)
-
-endif
+-include $(objects:.o=.d)
